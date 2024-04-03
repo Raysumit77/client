@@ -9,6 +9,8 @@ import { Login } from "./pages/Login";
 import { Register } from "./pages/Register";
 import { VerifyPassword } from "./pages/VerifyPassword";
 import { About } from "./pages/About";
+import { AdminBlogs } from "./admin/Blogs";
+import { AdminUsers } from "./admin/Users";
 
 function App() {
   return (
@@ -25,6 +27,9 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/about" element={<About />} />
         <Route path="/bookmark" element={<Bookmark />} />
+        {/* Admin User Route */}
+        <Route path="/admin/blogs" element={<AdminBlogs />} />
+        <Route path="/admin/users" element={<AdminUsers />} />
       </Routes>
     </>
   );
