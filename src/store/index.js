@@ -13,8 +13,8 @@ import {
 import storage from "redux-persist/lib/storage"; // Local storage
 import autoMegerLevel2 from "redux-persist/lib/stateReconciler/autoMergeLevel2";
 
-import { bookmarkReducer } from "../slice/bookmarkSlice";
-import { blogReducer } from "../slice/blogSlice";
+import { bookmarkReducer } from "../slices/bookmarkSlice";
+import { blogReducer } from "../slices/blogSlice";
 
 const persistConfig = {
   key: "blog-bookmark",
