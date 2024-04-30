@@ -1,13 +1,16 @@
 import "./Login.css";
 import Logo from "../assets/logo.png";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+
 import instance from "../utils/api";
 import { URLS } from "../constants";
-import { useState } from "react";
 import { setToken } from "../utils/session";
+import { isLoggedIn, setCurrentUser } from "../utils/login";
 import Notify from "../components/Notify";
 
 export const Login = () => {
+  const navigate = useNavigate();
   const [payload, setPayload] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [msg, setMsg] = useState("");
@@ -17,20 +20,18 @@ export const Login = () => {
     try {
       setIsDisabled(true);
       e.preventDefault();
-      const result = await instance.Post(URLS.LOGIN, payload);
+      const result = await instance.post(URLS.LOGIN, payload);
       if (result.data.data) {
-        //store that token in the client LS
         setToken(result.data.data);
-        //show the mssg user successfully logged in
-        setMsg("User successfully registered");
-        //send user to admin blogs section
+        setCurrentUser();
+        setMsg("User successfully logged in");
         setTimeout(() => {
           navigate("/admin/blogs");
         }, 1500);
       }
     } catch (e) {
-      const err = e?.response?.data?.msg || "something went wrong";
-      setError("err");
+      const err = e?.response?.data?.msg || "Something went wrong";
+      setError(err);
     } finally {
       setIsDisabled(false);
       setPayload({ email: "", password: "" });
@@ -41,14 +42,19 @@ export const Login = () => {
     }
   };
 
+  useEffect(() => {
+    if (isLoggedIn()) {
+      navigate("/admin/blogs");
+    }
+  }, [navigate]);
+
   return (
-    <div className=" base d-flex justify-content-center align-items-center min-vh-100">
-      <div className="col-sm-4">
+    <div className="base d-flex justify-content-center align-items-center min-vh-100">
+      <div className="col-md-4">
         <div className="card shadow">
           <div className="card-body">
             <div className="row d-flex justify-content-center align-items-center">
               <img src={Logo} style={{ maxWidth: "75px" }} />
-
               <h2 className="text-center mt-2">Login</h2>
               {(msg || error) && (
                 <Notify type={msg ? "success" : "danger"} msg={msg || error} />
@@ -70,29 +76,29 @@ export const Login = () => {
                   />
                 </div>
                 <div className="mb-3">
-                  <label to="exampleInputPassword1" className="form-label">
-                    Password
-                  </label>
+                  <label className="form-label">Password</label>
                   <input
                     type="password"
                     className="form-control"
                     autoComplete="current-password"
+                    value={payload.password}
+                    onChange={(e) => {
+                      setPayload((prev) => {
+                        return { ...prev, password: e.target.value };
+                      });
+                    }}
+                    required
                   />
                 </div>
-                <div className="mb-3">
-                  <div className="mb-3I d-flex flex-row-reverse">
-                    <Link
-                      to="/Forget Password"
-                      className="text-decoration-none"
-                    >
-                      Forget Password?
-                    </Link>
-                  </div>
+                <div className="mb-3 d-flex flex-row-reverse">
+                  <Link to="/forget-password" className="text-decoration-none">
+                    Forget Password?
+                  </Link>
                 </div>
                 <div className="d-grid col-6 mx-auto">
                   <button
                     type="submit"
-                    className="btn btn-primary"
+                    className="btn btn-primary btn-lg"
                     disabled={isDisabled}
                   >
                     Login

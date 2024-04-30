@@ -7,4 +7,6 @@ export const URLS = {
   REGISTER: API_URL + "/users/register",
   GENERATE_FP: API_URL + "/users/generate-fp-token",
   VERIFY_FP: API_URL + "/users/verify-fp-token",
+  GETPUBLISHEDBLOGS: API_URL + "/blogs/published-only",
+  GET_ONE_BLOG: API_URL + "/blogs",
 };
