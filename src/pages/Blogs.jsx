@@ -1,121 +1,138 @@
-import "./Blog.css";
-
-import _ from "lodash";
-import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useBlogs } from "../hooks/useBlogs";
-import dateFormatter from "../utils/date";
-import { Comment } from "../components/Comment";
-
+import { Paginate } from "../components/Paginate";
+import { Link } from "react-router-dom";
+import "./Blogs.css";
+import Notify from "../components/Notify";
 import { useBlogsContext } from "../context/BlogContext";
+import { BlogSkeletal } from "../components/BlogSkeletal";
+
+import useDebounce from "../hooks/useDebounce";
+import { useEffect, useState } from "react";
 import { BASE_URL } from "../constants";
 
-export const Blog = () => {
-  const { blogs } = useBlogsContext();
-  const navigate = useNavigate();
-  const { pathname } = useLocation();
-  const slug = pathname.split("/")[2];
-  const { getOneBlog } = useBlogs();
+// REDUX
 
-  const [data, setData] = useState({});
+import { useDispatch } from "react-redux";
+import { addBookmark } from "../slices/bookmarkSlice";
+
+export const Blogs = () => {
+  const dispatch = useDispatch();
+  const { blogs, error, loading, page, setPage, limit, setLimit, setTitle } =
+    useBlogsContext();
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const debounceSearchTerm = useDebounce({ value: searchTerm, delayInMs: 500 });
 
   useEffect(() => {
-    const getBlog = async () => {
-      const result = await getOneBlog(slug);
-      if (!result) {
-        navigate("/blogs");
-      }
-      setData(result);
-    };
-    getBlog();
-  }, [slug, getOneBlog, navigate]);
+    setTitle(debounceSearchTerm);
+  }, [debounceSearchTerm, setTitle]);
 
-  const getRandomBlogs = () => {
-    const excludeThis = blogs?.data?.filter((blog) => blog.slug !== slug);
-    return _.sampleSize(excludeThis, 3);
-  };
+  if (error) {
+    return <>{error}</>;
+  }
+
   return (
     <>
-      <div className="d-flex flex flex-column mb-4 rounded-3">
-        <div className="d-flex justify-content-center">
-          <img src={data?.pictureUrl} className="img-fluid" width="800px" />
-        </div>
-        <div className="row mt-2">
-          <nav className="breadCrumbStyle">
-            <ol className="breadcrumb">
-              <li className="breadcrumb-item">
-                <Link to="/" className="text-decoration-none">
-                  Home
-                </Link>
-              </li>
-              <li className="breadcrumb-item" aria-current="page">
-                <Link to="/blogs" className="text-decoration-none">
-                  Blogs
-                </Link>
-              </li>
-              <li className="breadcrumb-item active" aria-current="page">
-                {data?.title}
-              </li>
-            </ol>
-          </nav>
-
-          <div className="container">
-            <div className="row">
-              <h1>{data?.title}</h1>
-            </div>
-            <div className="row">
-              <div className="flex d-flex d-grid gap-2">
-                <i className="fa fa-calendar"></i>
-                <span>
-                  {dateFormatter(data?.publishedDate)} by {data?.author?.name}
-                </span>
-              </div>
-            </div>
-          </div>
-          <div className="mt-3">
-            <p className="lead">{data?.content}</p>
-          </div>
-        </div>
-        {data?.title && (
-          <div>
-            <h2>Comments</h2>
-            <Comment
-              url={window.location.href}
-              slug={slug}
-              title={data?.title}
+      <div className="row mt-4">
+        <h4>Blogs</h4>
+        <div className="col-8">
+          <div className="input-group mb-3" style={{ maxWidth: "500px" }}>
+            <span className="input-group-text">
+              <i className="fa fa-search"></i>
+            </span>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Search by Blog Title"
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+              }}
             />
           </div>
+        </div>
+        <div className="col-4">
+          <div className="d-flex justify-content-end">
+            <select className="form-select" style={{ maxWidth: "200px" }}>
+              <option value="latest">Latest</option>
+              <option value="Alphabetical">Alphabetical</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div className="row">
+        {loading && (
+          <>
+            <BlogSkeletal />
+            <BlogSkeletal />
+            <BlogSkeletal />
+            <BlogSkeletal />
+          </>
         )}
-        <div className="row">
-          <h2>Recent Posts</h2>
-          <div className="card-group">
-            {getRandomBlogs().map((post) => {
+        {blogs?.data && blogs?.data.length > 0 ? (
+          <>
+            {blogs.data.map((blog) => {
               return (
-                <div key={post?.slug} className="card">
-                  <img
-                    src={
-                      post?.pictureUrl.includes("https:")
-                        ? post?.pictureUrl
-                        : BASE_URL.concat(post?.pictureUrl)
-                    }
-                    className="card-img-top"
-                    alt={post?.title}
-                  />
-                  <div className="card-body">
-                    <h5 className="card-title">{post?.title}</h5>
-                    <p className="card-text">{_.truncate(post?.content)}</p>
-                    <p className="card-text">
-                      <small className="text-body-secondary">
-                        {dateFormatter(post?.publishedDate)}
-                      </small>
-                    </p>
+                <div key={blog.slug} className="col-md-3">
+                  <div className="card mb-3">
+                    <img
+                      src={
+                        blog?.pictureUrl &&
+                        blog?.pictureUrl.includes("https://")
+                          ? blog?.pictureUrl
+                          : BASE_URL.concat(blog?.pictureUrl)
+                      }
+                      className="card-img-top"
+                      style={{
+                        width: "100%",
+                        height: "17vw",
+                        objectFit: "cover",
+                      }}
+                    />
+                    <div className="card-body">
+                      <h5 className="card-title">{blog?.title}</h5>
+                      <p className="card-text">
+                        <em>{blog?.content.slice(0, 55).concat("...")}</em>
+                      </p>
+                      <i className="fa fa-user"></i>&nbsp;{blog?.author} &nbsp;
+                      <i className="fa fa-clock-o"></i>&nbsp;
+                      {blog?.duration || 1} min read
+                      <div className="d-flex justify-content-between mt-4">
+                        <Link
+                          to={`/blogs/${blog?.slug}`}
+                          className="btn btn-custom"
+                        >
+                          Read more
+                        </Link>
+                        <button
+                          className="btn btn-light"
+                          onClick={() => {
+                            dispatch(addBookmark(blog));
+                          }}
+                        >
+                          <i className="fa fa-bookmark"></i>
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               );
             })}
-          </div>
-        </div>
+          </>
+        ) : (
+          <Notify type="danger" msg="No Blogs found..." />
+        )}
       </div>
+
+      {blogs?.data && blogs?.data.length > 0 && (
+        <Paginate
+          currentPage={page}
+          limit={limit}
+          setPage={setPage}
+          setLimit={setLimit}
+          total={blogs?.total || 0}
+        />
+      )}
     </>
   );
 };

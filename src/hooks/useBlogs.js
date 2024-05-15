@@ -12,9 +12,9 @@ export const useBlogs = () => {
     async ({ title = "", page = 1, limit = 10 }) => {
       try {
         setLoading(true);
+        console.log("URLS", URLS);
         const res = await instance.get(
-          URLS.GET_PUBLISHED_BLOGS +
-            `?title=${title}&page=${page}&limit=${limit}`
+          URLS.GETPUBLISHEDBLOGS + `?title=${title}&page=${page}&limit=${limit}`
         );
         setData(res.data.data);
         return res.data.data;
