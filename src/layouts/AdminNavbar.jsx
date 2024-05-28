@@ -1,6 +1,6 @@
 import Favicon32 from "../assets/logo/favicon-32x32.png";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { removeToken } from "../utils/session";
+import { removeAToken } from "../utils/session";
 
 import Dropdown from "react-bootstrap/Dropdown";
 

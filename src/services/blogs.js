@@ -7,6 +7,7 @@ const create = (payload) => {
     headers: {
       access_token: localStorage.getItem("access_token"),
       "Content-Type": "multipart/form-data",
+      
     },
   });
 };
