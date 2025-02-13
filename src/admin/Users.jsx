@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableRow, TableCell, TableBody } from "@/components/ui/table";
 import { Trash, Edit } from "lucide-react";
 
-export const AdminUsers = () => {
+export const Users = () => {
   const [users, setUsers] = useState([
     { id: 1, name: "Alice Johnson", email: "alice@example.com", role: "Admin" },
     { id: 2, name: "Bob Smith", email: "bob@example.com", role: "User" },
@@ -34,6 +34,7 @@ export const AdminUsers = () => {
               <TableRow key={user.id}>
                 <TableCell>{user.name}</TableCell>
                 <TableCell>{user.email}</TableCell>
+
                 <TableCell>{user.role}</TableCell>
                 <TableCell>
                   <Button variant="outline" className="mr-2">
